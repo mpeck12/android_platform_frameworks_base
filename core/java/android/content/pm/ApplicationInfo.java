@@ -350,6 +350,17 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      */
     public static final int FLAG_EXTRACT_NATIVE_LIBS = 1<<28;
 
+
+    /**
+     * Value for {@link #flags}: {@code true} if the application does not download and execute code
+     * and wants to opt-in for additional protection to prevent downloaded code execution.
+     * If {@code false}, the app chooses not to opt into the additional SE-based protection for
+     * preventing downloaded code execution.
+     *
+     * @hide
+     */
+     public static final int FLAG_PREVENT_DOWNLOAD_EXECUTION = 1<<29;
+
     /**
      * Value for {@link #flags}: true if code from this application will need to be
      * loaded into other applications' processes. On devices that support multiple
