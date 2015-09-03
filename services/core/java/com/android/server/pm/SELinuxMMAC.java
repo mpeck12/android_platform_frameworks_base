@@ -58,6 +58,10 @@ public final class SELinuxMMAC {
 
     static final String TAG = "SELinuxMMAC";
 
+
+    // Match the relevant strings to both flags and seinfo selector in seapp_contexts
+    private static final String NOEXECUTE_STR = "_nx";
+
     private static final boolean DEBUG_POLICY = false;
     private static final boolean DEBUG_POLICY_INSTALL = DEBUG_POLICY || false;
     private static final boolean DEBUG_POLICY_ORDER = DEBUG_POLICY || false;
@@ -303,6 +307,11 @@ public final class SELinuxMMAC {
      * used. The security label is attached to the ApplicationInfo instance of the package
      * in the event that a matching policy was found.
      *
+     * If the application has opted in to defined stricter policies in its manifest,
+     * then those policies are appended to the application's security label.
+     * For example, if preventDownloadExecution is true, and the application has the
+     * default seinfo label of 'default' its security label would be set to "default_nx".
+     *
      * @param pkg object representing the package to be labeled.
      */
     public static void assignSeinfoValue(PackageParser.Package pkg) {
@@ -320,6 +329,24 @@ public final class SELinuxMMAC {
             Slog.i(TAG, "package (" + pkg.packageName + ") labeled with " +
                     "seinfo=" + pkg.applicationInfo.seinfo);
         }
+
+	if ((pkg.applicationInfo.flags & ApplicationInfo.FLAG_PREVENT_DOWNLOAD_EXECUTION) != 0) {
+            pkg.applicationInfo.seinfo += NOEXECUTE_STR;
+            if (DEBUG_POLICY_INSTALL) {
+                Slog.i(TAG, "package (" + pkg.packageName + ") is assigned " +
+                        "preventDownloadExecution; seinfo updated to " +
+                        pkg.applicationInfo.seinfo );
+            }
+        } else {
+            if (DEBUG_POLICY_INSTALL) {
+                Slog.i(TAG, "package (" + pkg.packageName + ") did not have " +
+                        "stricter policies declared; seinfo not updated");
+            }
+        }
+
+        if ("".equalsIgnoreCase(pkg.applicationInfo.seinfo))
+            Slog.i(TAG, "package (" + pkg.packageName + ") ended up with " +
+                    "no seinfo label!");
     }
 
     /**
